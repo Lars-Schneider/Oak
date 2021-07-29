@@ -44,8 +44,12 @@
     <ClInclude Include="src\Scripting\Lua_API.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Scripting\ECS Lua.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\Lua Scripts\Script.lua" />
+    <None Include="lua54.dll" />
   </ItemGroup>
 </Project>
