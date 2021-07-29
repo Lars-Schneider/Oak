@@ -16,6 +16,6 @@ namespace Oak
 			return component_array[index];
 		}
 	private:
-		T component_array[OAK_ECS_MAX_ENTITES];
+		T component_array[OAK_ECS_MAX_ENTITES]{};
 	};
 }

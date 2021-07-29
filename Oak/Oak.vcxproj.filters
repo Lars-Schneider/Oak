@@ -41,5 +41,11 @@
     <ClInclude Include="src\ECS\Component Array\ECS_Component_Array.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Scripting\Lua_API.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\Lua Scripts\Script.lua" />
   </ItemGroup>
 </Project>
