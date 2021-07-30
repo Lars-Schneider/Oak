@@ -12,7 +12,7 @@ int main(int argc, char** argv)
 	SDLWindow* window = new SDLWindow();
 	window->Create("Oak", 100, 100, 600, 480);
 
-	SDLRenderer* renderer = new SDLRenderer(window);
+	Renderer* renderer = new SDLRenderer(window);
 	renderer->Init();
 
 	Oak::window = window;
