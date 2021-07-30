@@ -7,11 +7,21 @@ namespace Oak
 	{
 		const char* tag;
 	};
-	struct ECS_Position_c
+
+	struct ECS_Transform_c
 	{
 		f32 x;
 		f32 y;
+		f32 w;
+		f32 h;
 	};
+
+	struct ECS_Velocity_c
+	{
+		f32 vx;
+		f32 vy;
+	};
+
 	struct ECS_Script_c
 	{
 		lua_State* L;
@@ -19,10 +29,6 @@ namespace Oak
 	};
 	struct ECS_SDL_Rect_c
 	{
-		f32 x;
-		f32 y;
-		f32 w;
-		f32 h;
 		i32 r;
 		i32 g;
 		i32 b;

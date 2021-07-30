@@ -41,17 +41,17 @@ namespace Oak
 		}
 
 
-		void Add_Position(Entity entity, ECS_Position_c position)
+		void Add_Transform(Entity entity, ECS_Transform_c position)
 		{
 			component_array_manager.Add_Position(entity, position);
 		}
-		ECS_Position_c& Get_Position(Entity entity)
+		ECS_Transform_c& Get_Transform(Entity entity)
 		{
-			return component_array_manager.Position_Array()[entity];
+			return component_array_manager.Transform_Array()[entity];
 		}
-		bool Has_Position(Entity entity)
+		bool Has_Transform(Entity entity)
 		{
-			return component_array_manager.Position_Array().Bool_Array()[entity];
+			return component_array_manager.Transform_Array().Bool_Array()[entity];
 		}
 
 		void Add_Rect(Entity entity, ECS_SDL_Rect_c rect)
@@ -75,6 +75,20 @@ namespace Oak
 		{
 			return component_array_manager.Script_Array().Bool_Array()[entity];
 		}
+	
+		void Add_Velocity(Entity entity, ECS_Velocity_c velocity)
+		{
+			component_array_manager.Add_Velocity(entity, velocity);
+		}
+		ECS_Velocity_c& Get_Velocity(Entity entity)
+		{
+			return component_array_manager.Velocity_Array()[entity];
+		}
+		bool Has_Velocity(Entity entity)
+		{
+			return component_array_manager.Velocity_Array().Bool_Array()[entity];
+		}
+	
 	public:
 		ECS_Component_Array_Manager component_array_manager{};
 		Entity latest_entity;
