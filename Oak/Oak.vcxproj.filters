@@ -47,9 +47,18 @@
     <ClInclude Include="src\Scripting\ECS Lua.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Renderer\Renderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Renderer\SDL\SDLWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Renderer\SDL\SDLRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src\Lua Scripts\Script.lua" />
+    <None Include="src\Lua Scripts\Player.lua" />
     <None Include="lua54.dll" />
   </ItemGroup>
 </Project>

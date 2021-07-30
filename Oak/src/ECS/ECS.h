@@ -35,7 +35,10 @@ namespace Oak
 		{
 			return component_array_manager.Tag_Array()[entity];
 		}
-
+		bool Has_Tag(Entity entity)
+		{
+			return component_array_manager.Tag_Array().Bool_Array()[entity];
+		}
 
 
 		void Add_Position(Entity entity, ECS_Position_c position)
@@ -46,13 +49,31 @@ namespace Oak
 		{
 			return component_array_manager.Position_Array()[entity];
 		}
+		bool Has_Position(Entity entity)
+		{
+			return component_array_manager.Position_Array().Bool_Array()[entity];
+		}
 
-
-
+		void Add_Rect(Entity entity, ECS_SDL_Rect_c rect)
+		{
+			component_array_manager.Add_Rect(entity, rect);
+		}
+		ECS_SDL_Rect_c& Get_Rect(Entity entity)
+		{
+			return component_array_manager.Rect_Array()[entity];
+		}
+		bool Has_Rect(Entity entity)
+		{
+			return component_array_manager.Rect_Array().Bool_Array()[entity];
+		}
 
 		ECS_Script_c& Get_Script(Entity entity)
 		{
 			return component_array_manager.Script_Array()[entity];
+		}
+		bool Has_Script(Entity entity)
+		{
+			return component_array_manager.Script_Array().Bool_Array()[entity];
 		}
 	public:
 		ECS_Component_Array_Manager component_array_manager{};
