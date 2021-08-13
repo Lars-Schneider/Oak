@@ -20,10 +20,8 @@ namespace Oak
 		{
 			for (Entity e = 0; e < OAK_ECS_MAX_ENTITES; e++)
 			{
-				std::cout << "Current Tag: " << component_array_manager.Tag_Array()[e].tag << "\n";
 				if (component_array_manager.Tag_Array()[e].tag == entity_tag)
 				{
-					std::cout << 1;
 					return e;
 				}
 			}

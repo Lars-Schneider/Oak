@@ -106,7 +106,7 @@ namespace Oak
 
 		int Print(lua_State* L)
 		{
-			std::cout << lua_tostring(L, -1) << "\n";
+			std::cout << "[LUA] " << lua_tostring(L, -1) << "\n";
 			return 1;
 		}
 

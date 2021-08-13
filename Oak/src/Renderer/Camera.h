@@ -18,7 +18,7 @@ public:
 	int width;
 	int height;
 
-	float speed = 0.01f;
+	float speed = 1.0f;
 	float sensitivity = 100.0f;
 	// Prevents the camera from jumping around when first clicking left click
 	bool firstClick = true;
@@ -48,34 +48,34 @@ public:
 	}
 
 
-	void Input(GLFWwindow* window)
+	void Input(GLFWwindow* window, double dt)
 	{
 
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		{
-			Position.y += speed;
+			Position.y += speed * dt;
 		}
 		if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
 		{
-			Position.x -= speed;
+			Position.x -= speed * dt;
 		}
 		if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
 		{
-			Position.y -= speed;
+			Position.y -= speed * dt;
 		}
 		if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
 		{
-			Position.x += speed;
+			Position.x += speed * dt;
 		}
 
 
 		if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
 		{
-			Position += speed * -Orientation;
+			Position += (speed * (float)dt) -Orientation;
 		}
 		if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
 		{
-			Position += speed * Orientation;
+			Position += (speed * (float)dt) * Orientation;
 		}
 		/*
 		if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)

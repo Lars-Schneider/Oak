@@ -9,7 +9,7 @@ namespace Oak
 		if (r != LUA_OK)
 		{
 			const char* error = lua_tostring(L, -1);
-			std::cout << error << std::endl;
+			std::cout << error << "\n";
 			return false;
 		}
 		return true;
@@ -36,5 +36,16 @@ namespace Oak
 	{
 		lua_pushinteger(L, value);
 		lua_setglobal(L, name.c_str());
+	}
+
+	void Lua_Update(lua_State* L, double delta, std::string script_name)
+	{
+		std::string path = "src/Lua Scripts/" + script_name + ".lua";
+		lua_getglobal(L, "Update");
+		lua_pushnumber(L, delta);
+		if(Lua_Check(L, luaL_dofile(L, path.c_str())))
+		{
+			lua_pcall(L, 1, 0, 0);
+		}
 	}
 }

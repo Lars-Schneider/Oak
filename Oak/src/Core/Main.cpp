@@ -126,7 +126,7 @@ int main(int argc, char** argv)
 	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	
-
+	glfwSwapInterval(1);
 	//GLAD
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
@@ -172,17 +172,19 @@ int main(int argc, char** argv)
 	Entity player = ecs->Create_Entity();
 	ecs->Add_Tag(player, { "Player" });
 	ecs->Add_Transform(player, { 0,2,1,1 });
-	ecs->Add_Rect(player, { 1,1,1,1 });
+	ecs->Add_Rect(player, { 1,0,0,1 });
 	ECS_Lua_Add_Script(player);
 
 	Entity ground = ecs->Create_Entity();
 	ecs->Add_Tag(ground, { "Ground" });
 	ecs->Add_Transform(ground, { 0,0,100,100 });
-	ecs->Add_Rect(ground, { 1,1,1,1 });
+	ecs->Add_Rect(ground, { 0.63,0.2789,0.1512,1 });
 
-	const double fpsLimit = 1.0 / 60.0;
+	const double fpsLimit = 1.0 / 100.0;
 	double lastUpdateTime = 0;  // number of seconds since the last loop
 	double lastFrameTime = 0;   // number of seconds since the last frame
+
+	char* buf = new char[1024];
 
 	//Game loop
 	glfwMaximizeWindow(window);
@@ -190,6 +192,7 @@ int main(int argc, char** argv)
 	{
 		double now = glfwGetTime();
 		double deltaTime = now - lastUpdateTime;
+		double dt = now - lastFrameTime;
 
 		glfwPollEvents();
 
@@ -200,17 +203,18 @@ int main(int argc, char** argv)
 		
 		glfwPollEvents();
 		// This if-statement only executes once every 60th of a second
-		if ((now - lastFrameTime) >= fpsLimit)
+		//if ((now - lastFrameTime) >= fpsLimit)
 		{
 			for (Entity e = 0; e < OAK_ECS_MAX_ENTITES; e++)
 			{
 				if (running && ecs->Has_Script(e))
 				{
-					Lua_Call_Function(ecs->Get_Script(e).L, ecs->Get_Tag(e).tag.c_str(), "Update");
+					if (dt < 0) dt = -dt;
+					Lua_Update(ecs->Get_Script(e).L, dt, ecs->Get_Tag(e).tag);
 				}
 			}
 			if (!running)
-				camera->Input(window);
+				camera->Input(window, dt);
 			// draw your frame here
 			glClearColor(0.2125f, 0.4356f, 0.85f, 0.5f);
 			glClear(GL_COLOR_BUFFER_BIT);
@@ -244,6 +248,10 @@ int main(int argc, char** argv)
 			glfwGetWindowSize(window, &camera->width, &camera->height);
 
 			renderer->EndFrame();
+	
+			ImGui::Begin("FPS");
+			ImGui::Text(std::to_string(1 / dt).c_str());
+			ImGui::End();
 			ImGui::Begin("Game");
 			ImGui::Checkbox("Play", &running);
 			ImGui::End();
@@ -275,14 +283,13 @@ int main(int argc, char** argv)
 				ImGui::SliderFloat("X", &camera->Position.x, -1000, 1000);
 				ImGui::SliderFloat("Y", &camera->Position.y, -1000, 1000);
 				ImGui::SliderFloat("Zoom", &camera->Position.z, 2, 100);
-				ImGui::SliderFloat("Speed", &camera->speed, 0, 1);
+				ImGui::SliderFloat("Speed", &camera->speed, 0, 100);
 				ImGui::End();
 
 
 
 
 				ImGui::Begin("Entity");
-				char* buf = new char[1024];
 				buf = (char*)ecs->Get_Tag(selected_entity).tag.c_str();
 				ImGui::InputText("Tag", buf, 1024 * sizeof(char));
 				ImGui::SameLine();
@@ -290,6 +297,7 @@ int main(int argc, char** argv)
 				{
 					ecs->Get_Tag(selected_entity).tag = buf;
 				}
+				
 				//std::cout << ecs->Get_Tag(selected_entity).tag;
 				ImGui::SliderFloat("X", &ecs->Get_Transform(selected_entity).x, -100, 100);
 
