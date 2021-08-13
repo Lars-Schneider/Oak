@@ -31,4 +31,10 @@ namespace Oak
 		lua_pushcfunction(L, function_pointer);
 		lua_setglobal(L, function_name.c_str());
 	}
+
+	void Lua_Push_Integer(lua_State* L, std::string name, int value)
+	{
+		lua_pushinteger(L, value);
+		lua_setglobal(L, name.c_str());
+	}
 }

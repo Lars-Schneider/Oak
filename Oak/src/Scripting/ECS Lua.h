@@ -3,10 +3,12 @@
 #include "Lua.h"
 #include <string>
 #include <iostream>
+#include <GLFW/glfw3.h>
 
 namespace Oak
 {
 	ECS_Manager* manager;
+	GLFWwindow* window;
 
 	int width;
 	int height;
@@ -119,6 +121,13 @@ namespace Oak
 			lua_pushnumber(L, height);
 			return 1;
 		}
+
+		int Key_Pressed(lua_State* L)
+		{
+			int key = std::stoi(lua_tostring(L, -1));
+			lua_pushboolean(L, glfwGetKey(window, key) == GLFW_PRESS);
+			return 1;
+		}
 	}
 
 
@@ -145,6 +154,16 @@ namespace Oak
 
 		Lua_Push_Function(L, "Screen_Width", Lua::Screen_Width);
 		Lua_Push_Function(L, "Screen_Height", Lua::Screen_Height);
+		Lua_Push_Function(L, "Key_Pressed", Lua::Key_Pressed);
+	}
+
+	void ECS_Lua_Push_Variables(lua_State* L)
+	{
+		Lua_Push_Integer(L, "SPACE", GLFW_KEY_SPACE);
+		Lua_Push_Integer(L, "LEFT", GLFW_KEY_LEFT);
+		Lua_Push_Integer(L, "RIGHT", GLFW_KEY_RIGHT);
+		Lua_Push_Integer(L, "UP", GLFW_KEY_UP);
+		Lua_Push_Integer(L, "DOWN", GLFW_KEY_DOWN);
 	}
 
 	void ECS_Lua_Add_Script(Entity entity)
@@ -153,6 +172,7 @@ namespace Oak
 		script.L = luaL_newstate();
 		script.path = manager->Get_Tag(entity).tag.c_str();
 		ECS_Lua_Push_Functions(script.L);
+		ECS_Lua_Push_Variables(script.L);
 		manager->component_array_manager.Add_Script(entity, script);
 	}
 }

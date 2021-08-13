@@ -20,13 +20,22 @@ namespace Oak
 		{
 			for (Entity e = 0; e < OAK_ECS_MAX_ENTITES; e++)
 			{
+				std::cout << "Current Tag: " << component_array_manager.Tag_Array()[e].tag << "\n";
 				if (component_array_manager.Tag_Array()[e].tag == entity_tag)
 				{
+					std::cout << 1;
 					return e;
 				}
 			}
+			//std::cout << "\n\n\n" << entity_tag<< "\n";
 		}
 		
+		inline ECS_Component_Array<ECS_Tag_c>& Tag_Array() { return component_array_manager.Tag_Array(); }
+		inline ECS_Component_Array<ECS_Transform_c>& Transform_Array() { return component_array_manager.Transform_Array(); }
+		inline ECS_Component_Array<ECS_Script_c>& Script_Array() { return component_array_manager.Script_Array(); }
+		inline ECS_Component_Array<ECS_SDL_Rect_c>& Rect_Array() { return component_array_manager.Rect_Array(); }
+		inline ECS_Component_Array<ECS_Velocity_c>& Velocity_Array() { return component_array_manager.Velocity_Array(); }
+
 		void Add_Tag(Entity entity, ECS_Tag_c tag)
 		{
 			component_array_manager.Add_Tag(entity, tag);

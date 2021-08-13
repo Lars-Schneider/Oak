@@ -23,7 +23,7 @@ public:
 	// Prevents the camera from jumping around when first clicking left click
 	bool firstClick = true;
 
-
+	glm::mat4 matrix = glm::mat4(0.0f);
 
 	Camera(int width, int height, glm::vec3 position)
 	{
@@ -41,10 +41,12 @@ public:
 		view = glm::lookAt(Position, Position + Orientation, Up);
 		// Adds perspective to the scene
 		projection = glm::perspective(glm::radians(FOVdeg), (float)width / height, nearPlane, farPlane);
+		matrix = projection * view;
 
 		// Exports the camera matrix to the Vertex Shader
-		glUniformMatrix4fv(glGetUniformLocation(shader.ID, uniform), 1, GL_FALSE, glm::value_ptr(projection * view));
+		glUniformMatrix4fv(glGetUniformLocation(shader.ID, uniform), 1, GL_FALSE, glm::value_ptr(matrix));
 	}
+
 
 	void Input(GLFWwindow* window)
 	{

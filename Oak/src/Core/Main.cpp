@@ -2,14 +2,19 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
+
+#include <src/Renderer/OpenGLRenderer.h>
+#include <src/Renderer/Camera.h>
+#include <GLFW/glfw3.h>
 #include "src/ECS/ECS.h"
 #include "src/Scripting/Lua.h"
 #include "src/Scripting/Lua_API.h"
 #include "src/Scripting/ECS Lua.h"
-#include <src/Renderer/OpenGLRenderer.h>
-#include <GLFW/glfw3.h>
-#include <src/Renderer/Camera.h>
 using namespace Oak;
+
+
+
+
 auto ColorFromBytes = [](uint8_t r, uint8_t g, uint8_t b)
 {
 	return ImVec4((float)r / 255.0f, (float)g / 255.0f, (float)b / 255.0f, 1.0f);
@@ -102,22 +107,25 @@ void ProcessInput(GLFWwindow* window)
 }
 int main(int argc, char** argv)
 {
-	//GLFW
+	bool running = false;
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_SAMPLES, 32); // Uhuh? 
 
-	GLFWwindow* glfwwindow = glfwCreateWindow(800, 640, "Oak", NULL, NULL);
-	Oak::width = 800;
-	Oak::height = 640;
-	if (glfwwindow == NULL)
+
+	GLFWwindow* window =  glfwCreateWindow(800, 640, "My Title", NULL, NULL); // Title now redundant..
+	
+	
+	if (window == NULL)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
 	}
-	glfwMakeContextCurrent(glfwwindow);
-	glfwSetFramebufferSizeCallback(glfwwindow, framebuffer_size_callback);
+	glfwMakeContextCurrent(window);
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	
 
 	//GLAD
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -129,8 +137,8 @@ int main(int argc, char** argv)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	//Rendering
-	OpenGLRenderer* oglrenderer = new OpenGLRenderer();
-	oglrenderer->Init();
+	OpenGLRenderer* renderer = new OpenGLRenderer();
+	renderer->Init();
 
 	Camera* camera = new Camera(800, 640, glm::vec3(0.0f, 0.0f, 2.0f));
 	camera->Position.z = 10;
@@ -139,6 +147,7 @@ int main(int argc, char** argv)
 	ECS_Manager* ecs = new ECS_Manager();
 
 	Oak::manager = ecs;
+	Oak::window = window;
 
 	//Main entity
 
@@ -152,121 +161,180 @@ int main(int argc, char** argv)
 	ImGuiIO& io = ImGui::GetIO();
 	(void)io;
 	ImGui::StyleColorsDark();
-	ImGui_ImplGlfw_InitForOpenGL(glfwwindow, true);
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init("#version 330");
 	VSTheme();
+	bool viewing_script = false;
+	char* current_script = new char[0];
 
 	Entity selected_entity = 0;
 
+	Entity player = ecs->Create_Entity();
+	ecs->Add_Tag(player, { "Player" });
+	ecs->Add_Transform(player, { 0,2,1,1 });
+	ecs->Add_Rect(player, { 1,1,1,1 });
+	ECS_Lua_Add_Script(player);
+
+	Entity ground = ecs->Create_Entity();
+	ecs->Add_Tag(ground, { "Ground" });
+	ecs->Add_Transform(ground, { 0,0,100,100 });
+	ecs->Add_Rect(ground, { 1,1,1,1 });
+
+	const double fpsLimit = 1.0 / 60.0;
+	double lastUpdateTime = 0;  // number of seconds since the last loop
+	double lastFrameTime = 0;   // number of seconds since the last frame
 
 	//Game loop
-
-	while (!glfwWindowShouldClose(glfwwindow))
+	glfwMaximizeWindow(window);
+	while (!glfwWindowShouldClose(window))
 	{
-		ProcessInput(glfwwindow);
-		glClearColor(0.2125f, 0.4356f, 0.85f, 0.5f);
-		glClear(GL_COLOR_BUFFER_BIT);
-		
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		ImGui::NewFrame();
+		double now = glfwGetTime();
+		double deltaTime = now - lastUpdateTime;
 
-		oglrenderer->BeginFrame();
-
-		for (Entity e = 0; e < OAK_ECS_MAX_ENTITES; e++)
-		{
-			if (ecs->Has_Rect(e))
-			{
-				f32 x = ecs->Get_Transform(e).x;
-				f32 y = ecs->Get_Transform(e).y;
-				f32 w = ecs->Get_Transform(e).w;
-				f32 h = ecs->Get_Transform(e).h;
-				f32 r = ecs->Get_Rect(e).r;
-				f32 g = ecs->Get_Rect(e).g;
-				f32 b = ecs->Get_Rect(e).b;
-				f32 a = ecs->Get_Rect(e).a;
-				oglrenderer->DrawQuad(x, y, w, h, r, g, b, a);
-			}
-		}
-
-
-		camera->Input(glfwwindow);
-		camera->Matrix(45.0f, 0.1f, 1000.0f, oglrenderer->GetShader(), "camMatrix");
-		glfwGetWindowSize(glfwwindow, &camera->width, &camera->height);
-		oglrenderer->EndFrame();
-
-		ImGui::Begin("Stats");
-		std::string qc("Quad Count: ");
-		qc += std::to_string(oglrenderer->QuadCount());
-		ImGui::Text(qc.c_str());
-		std::string vc("Vertex Count: ");
-		vc += std::to_string(oglrenderer->VertexCount());
-		ImGui::Text(vc.c_str());
-		ImGui::End();
-
-		ImGui::Begin("Scene");
-
-
-		if (ImGui::Button("Add Entity"))
-		{
-			selected_entity = ecs->Create_Entity();
-			std::string tag = std::to_string(selected_entity);
-			ecs->Add_Tag(selected_entity, { tag });
-			ecs->Add_Transform(selected_entity, { 0,0,1,1 });
-			ecs->Add_Rect(selected_entity, { 0,1,0.5f,1 });
-		}
-		for (Entity e = 0; e < ecs->latest_entity; e++)
-		{
-			std::cout << ecs->Get_Tag(e).tag.c_str()<<"\n";
-	
-			if (ImGui::Button(ecs->Get_Tag(e).tag.c_str()))
-			{
-				selected_entity = e;
-			}
-		}
-		ImGui::End();
-
-		ImGui::Begin("Camera");
-		ImGui::SliderFloat("X", &camera->Position.x, -1000, 1000);
-		ImGui::SliderFloat("Y", &camera->Position.y, -1000, 1000);
-		ImGui::SliderFloat("Zoom", &camera->Position.z, 2, 100);
-		ImGui::SliderFloat("Speed", &camera->speed, 0, 1);
-		ImGui::End();
-		
-
-		ImGui::Begin(std::to_string(selected_entity).c_str());
-		ImGui::SliderFloat("X", &ecs->Get_Transform(selected_entity).x, -100, 100);
-		ImGui::SliderFloat("Y", &ecs->Get_Transform(selected_entity).y, -100, 100);
-		ImGui::SliderFloat("W", &ecs->Get_Transform(selected_entity).w, 0, 100);
-		ImGui::SliderFloat("H", &ecs->Get_Transform(selected_entity).h, 0, 100);
-		float* color = new float[4];
-		color[0] = ecs->Get_Rect(selected_entity).r;
-		color[1] = ecs->Get_Rect(selected_entity).g;
-		color[2] = ecs->Get_Rect(selected_entity).b;
-		color[3] = ecs->Get_Rect(selected_entity).a;
-		ImGui::ColorEdit4("Color", color);
-		
-		ecs->Get_Rect(selected_entity).r = color[0];
-		ecs->Get_Rect(selected_entity).g = color[1];
-		ecs->Get_Rect(selected_entity).b = color[2];
-		ecs->Get_Rect(selected_entity).a = color[3];
-		
-		ImGui::End();
-
-
-		ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-		glfwSwapBuffers(glfwwindow);
 		glfwPollEvents();
 
+		// update your application logic here,
+		// using deltaTime if necessary (for physics, tweening, etc.)
+		ProcessInput(window);
 
-
-		/*
 		
-		*/
+		glfwPollEvents();
+		// This if-statement only executes once every 60th of a second
+		if ((now - lastFrameTime) >= fpsLimit)
+		{
+			for (Entity e = 0; e < OAK_ECS_MAX_ENTITES; e++)
+			{
+				if (running && ecs->Has_Script(e))
+				{
+					Lua_Call_Function(ecs->Get_Script(e).L, ecs->Get_Tag(e).tag.c_str(), "Update");
+				}
+			}
+			if (!running)
+				camera->Input(window);
+			// draw your frame here
+			glClearColor(0.2125f, 0.4356f, 0.85f, 0.5f);
+			glClear(GL_COLOR_BUFFER_BIT);
+
+			ImGui_ImplOpenGL3_NewFrame();
+			ImGui_ImplGlfw_NewFrame();
+			ImGui::NewFrame();
+
+
+
+			renderer->BeginFrame();
+
+			for (Entity e = 0; e < OAK_ECS_MAX_ENTITES; e++)
+			{
+				if (ecs->Has_Rect(e))
+				{
+					f32 x = ecs->Get_Transform(e).x;
+					f32 y = ecs->Get_Transform(e).y;
+					f32 w = ecs->Get_Transform(e).w;
+					f32 h = ecs->Get_Transform(e).h;
+					f32 r = ecs->Get_Rect(e).r;
+					f32 g = ecs->Get_Rect(e).g;
+					f32 b = ecs->Get_Rect(e).b;
+					f32 a = ecs->Get_Rect(e).a;
+					renderer->DrawQuad(x, y, w, h, r, g, b, a);
+				}
+			}
+
+
+			camera->Matrix(45.0f, 0.1f, 1000.0f, renderer->GetShader(), "camMatrix");
+			glfwGetWindowSize(window, &camera->width, &camera->height);
+
+			renderer->EndFrame();
+			ImGui::Begin("Game");
+			ImGui::Checkbox("Play", &running);
+			ImGui::End();
+			if (!running)
+			{
+				//IMGUI
+				ImGui::Begin("Scene");
+
+
+				if (ImGui::Button("Add Entity"))
+				{
+					selected_entity = ecs->Create_Entity();
+					std::string tag = std::to_string(selected_entity);
+					ecs->Add_Tag(selected_entity, { tag });
+					ecs->Add_Transform(selected_entity, { 0,0,1,1 });
+					ecs->Add_Rect(selected_entity, { 0,1,0.5f,1 });
+				}
+				for (Entity e = 0; e < ecs->latest_entity; e++)
+				{
+
+					if (ImGui::Button(ecs->Get_Tag(e).tag.c_str()))
+					{
+						selected_entity = e;
+					}
+				}
+				ImGui::End();
+
+				ImGui::Begin("Camera");
+				ImGui::SliderFloat("X", &camera->Position.x, -1000, 1000);
+				ImGui::SliderFloat("Y", &camera->Position.y, -1000, 1000);
+				ImGui::SliderFloat("Zoom", &camera->Position.z, 2, 100);
+				ImGui::SliderFloat("Speed", &camera->speed, 0, 1);
+				ImGui::End();
+
+
+
+
+				ImGui::Begin("Entity");
+				char* buf = new char[1024];
+				buf = (char*)ecs->Get_Tag(selected_entity).tag.c_str();
+				ImGui::InputText("Tag", buf, 1024 * sizeof(char));
+				ImGui::SameLine();
+				if (ImGui::Button("Set Tag"))
+				{
+					ecs->Get_Tag(selected_entity).tag = buf;
+				}
+				//std::cout << ecs->Get_Tag(selected_entity).tag;
+				ImGui::SliderFloat("X", &ecs->Get_Transform(selected_entity).x, -100, 100);
+
+				ImGui::SliderFloat("Y", &ecs->Get_Transform(selected_entity).y, -100, 100);
+				ImGui::SliderFloat("W", &ecs->Get_Transform(selected_entity).w, 0, 100);
+				ImGui::SliderFloat("H", &ecs->Get_Transform(selected_entity).h, 0, 100);
+				float* color = new float[4];
+				color[0] = ecs->Get_Rect(selected_entity).r;
+				color[1] = ecs->Get_Rect(selected_entity).g;
+				color[2] = ecs->Get_Rect(selected_entity).b;
+				color[3] = ecs->Get_Rect(selected_entity).a;
+				ImGui::ColorEdit4("Color", color);
+				ecs->Get_Rect(selected_entity).r = color[0];
+				ecs->Get_Rect(selected_entity).g = color[1];
+				ecs->Get_Rect(selected_entity).b = color[2];
+				ecs->Get_Rect(selected_entity).a = color[3];
+				if (ImGui::Button("Add Script"))
+				{
+					ECS_Lua_Add_Script(selected_entity);
+				}
+				ImGui::End();
+			}
+
+			ImGui::Render();
+			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+			glfwSwapBuffers(window);
+
+			// only set lastFrameTime when you actually draw something
+			lastFrameTime = now;
+		}
+
+		// set lastUpdateTime every iteration
+		lastUpdateTime = now;
+		
+		
+		
 	}
+	glfwTerminate();
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
 	delete ecs;
-	delete oglrenderer;
+	delete renderer;
+	delete camera;
+	delete[] current_script;
 	return 1;
 }
