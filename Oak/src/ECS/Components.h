@@ -1,11 +1,13 @@
 #pragma once
 #include "src/Types.h"
+#include "src/ECS/ECS_Types.h"
+#include <string>
 #include "src/Scripting/Lua.h"
 namespace Oak
 {
 	struct ECS_Tag_c
 	{
-		const char* tag;
+		std::string tag;
 	};
 
 	struct ECS_Transform_c
@@ -29,9 +31,9 @@ namespace Oak
 	};
 	struct ECS_SDL_Rect_c
 	{
-		i32 r;
-		i32 g;
-		i32 b;
-		i32 a;
+		f32 r;
+		f32 g;
+		f32 b;
+		f32 a;
 	};
 }
