@@ -27,9 +27,9 @@ namespace Oak
 	struct ECS_Script_c
 	{
 		lua_State* L;
-		const char* path;
+		std::string path;
 	};
-	struct ECS_SDL_Rect_c
+	struct ECS_Quad_c
 	{
 		f32 r;
 		f32 g;

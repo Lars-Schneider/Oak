@@ -1,6 +1,7 @@
 #pragma once
 #include <src/Renderer/Shader.h>
 #include <array>
+#include "Renderer.h"
 const unsigned int MAX_QUAD_COUNT = 1024;
 const unsigned int MAX_VERTEX_COUNT = MAX_QUAD_COUNT * 4;
 const unsigned int MAX_INDEX_COUNT = MAX_QUAD_COUNT * 6;
@@ -101,7 +102,7 @@ public:
 		// Draw primitives, number of indices, datatype of indices, index of indices
 		glDrawElements(GL_TRIANGLES, index_count, GL_UNSIGNED_INT, 0);
 	}
-	void DrawQuad(float x, float y, float w, float h, float r, float g, float b, float a)
+	void DrawQuad(f32 x, f32 y, f32 w, f32 h, f32 r, f32 g, f32 b, f32 a)
 	{
 		//Bottom right
 		Vertex v0;

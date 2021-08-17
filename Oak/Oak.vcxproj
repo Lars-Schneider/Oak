@@ -18,6 +18,7 @@
     <ClCompile Include="imgui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="imgui\imgui_tables.cpp" />
     <ClCompile Include="imgui\imgui_widgets.cpp" />
+    <ClCompile Include="src\Core\Editor.cpp" />
     <ClCompile Include="src\Core\Main.cpp" />
     <ClCompile Include="src\Renderer\glad.c" />
     <ClCompile Include="vendor\include\glm\detail\glm.cpp" />
@@ -31,6 +32,7 @@
     <ClInclude Include="imgui\imstb_rectpack.h" />
     <ClInclude Include="imgui\imstb_textedit.h" />
     <ClInclude Include="imgui\imstb_truetype.h" />
+    <ClInclude Include="src\Core\Editor.h" />
     <ClInclude Include="src\Renderer\Camera.h" />
     <ClInclude Include="src\Renderer\OpenGLRenderer.h" />
     <ClInclude Include="src\Renderer\Renderer.h" />
@@ -39,10 +41,9 @@
     <ClInclude Include="src\Scripting\Lua_API.h" />
     <ClInclude Include="src\Types.h" />
     <ClInclude Include="src\ECS\Components.h" />
-    <ClInclude Include="src\ECS\ECS.h" />
     <ClInclude Include="src\ECS\ECS_Types.h" />
     <ClInclude Include="src\ECS\Component Array\ECS_Component_Array.h" />
-    <ClInclude Include="src\ECS\ECS_Component_Array_Manager.h" />
+    <ClInclude Include="src\ECS\ECS.h" />
     <ClInclude Include="src\Scripting\Lua.h" />
     <ClInclude Include="vendor\include\glad\glad.h" />
     <ClInclude Include="vendor\include\GLFW\glfw3.h" />

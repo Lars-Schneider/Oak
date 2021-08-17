@@ -115,7 +115,7 @@ int main(int argc, char** argv)
 	glfwWindowHint(GLFW_SAMPLES, 32); // Uhuh? 
 
 
-	GLFWwindow* window =  glfwCreateWindow(800, 640, "My Title", NULL, NULL); // Title now redundant..
+	GLFWwindow* window =  glfwCreateWindow(800, 640, "Oak Game Engine", NULL, NULL); // Title now redundant..
 	
 	
 	if (window == NULL)
@@ -144,10 +144,11 @@ int main(int argc, char** argv)
 	camera->Position.z = 10;
 
 	//Ecs initialization.
-	ECS_Manager* ecs = new ECS_Manager();
+	ECS* ecs = new ECS();
 
 	Oak::manager = ecs;
 	Oak::window = window;
+	Oak::camera = camera;
 
 	//Main entity
 
@@ -169,20 +170,19 @@ int main(int argc, char** argv)
 
 	Entity selected_entity = 0;
 
-	Entity player = ecs->Create_Entity();
-	ecs->Add_Tag(player, { "Player" });
-	ecs->Add_Transform(player, { 0,2,1,1 });
-	ecs->Add_Rect(player, { 1,0,0,1 });
+	Entity player = ecs->CreateEntity();
+	ecs->AddTag(player, { "Player" });
+	ecs->AddTransform(player, { 0,2,1,1 });
+	ecs->AddQuad(player, { 1,0,0,1 });
 	ECS_Lua_Add_Script(player);
 
-	Entity ground = ecs->Create_Entity();
-	ecs->Add_Tag(ground, { "Ground" });
-	ecs->Add_Transform(ground, { 0,0,100,100 });
-	ecs->Add_Rect(ground, { 0.63,0.2789,0.1512,1 });
+	Entity ground = ecs->CreateEntity();
+	ecs->AddTag(ground, { "Ground" });
+	ecs->AddTransform(ground, { 0,0,100,100 });
+	ecs->AddQuad(ground, { 0.63,0.2789,0.1512,1 });
 
-	const double fpsLimit = 1.0 / 100.0;
-	double lastUpdateTime = 0;  // number of seconds since the last loop
-	double lastFrameTime = 0;   // number of seconds since the last frame
+	f64 lastUpdateTime = 0;  // number of seconds since the last loop
+	f64 lastFrameTime = 0;   // number of seconds since the last frame
 
 	char* buf = new char[1024];
 
@@ -205,12 +205,11 @@ int main(int argc, char** argv)
 		// This if-statement only executes once every 60th of a second
 		//if ((now - lastFrameTime) >= fpsLimit)
 		{
-			for (Entity e = 0; e < OAK_ECS_MAX_ENTITES; e++)
+			if (running)
 			{
-				if (running && ecs->Has_Script(e))
+				for (ECS_Script_c& s : ecs->Scripts())
 				{
-					if (dt < 0) dt = -dt;
-					Lua_Update(ecs->Get_Script(e).L, dt, ecs->Get_Tag(e).tag);
+					Lua_Update(s.L, dt, s.path);
 				}
 			}
 			if (!running)
@@ -227,20 +226,12 @@ int main(int argc, char** argv)
 
 			renderer->BeginFrame();
 
-			for (Entity e = 0; e < OAK_ECS_MAX_ENTITES; e++)
+			for (Entity e : ecs->WithQuads())
 			{
-				if (ecs->Has_Rect(e))
-				{
-					f32 x = ecs->Get_Transform(e).x;
-					f32 y = ecs->Get_Transform(e).y;
-					f32 w = ecs->Get_Transform(e).w;
-					f32 h = ecs->Get_Transform(e).h;
-					f32 r = ecs->Get_Rect(e).r;
-					f32 g = ecs->Get_Rect(e).g;
-					f32 b = ecs->Get_Rect(e).b;
-					f32 a = ecs->Get_Rect(e).a;
-					renderer->DrawQuad(x, y, w, h, r, g, b, a);
-				}
+				std::cout << 1;
+				ECS_Transform_c& t = ecs->GetTransform(e);
+				ECS_Quad_c& q = ecs->GetQuad(e);
+				renderer->DrawQuad(t.x, t.y, t.w, t.h, q.r, q.g, q.b, q.a);
 			}
 
 
@@ -263,16 +254,16 @@ int main(int argc, char** argv)
 
 				if (ImGui::Button("Add Entity"))
 				{
-					selected_entity = ecs->Create_Entity();
+					selected_entity = ecs->CreateEntity();
 					std::string tag = std::to_string(selected_entity);
-					ecs->Add_Tag(selected_entity, { tag });
-					ecs->Add_Transform(selected_entity, { 0,0,1,1 });
-					ecs->Add_Rect(selected_entity, { 0,1,0.5f,1 });
+					ecs->AddTag(selected_entity, { tag });
+					ecs->AddTransform(selected_entity, { 0,0,1,1 });
+					ecs->AddQuad(selected_entity, { 0,1,0.5f,1 });
 				}
 				for (Entity e = 0; e < ecs->latest_entity; e++)
 				{
 
-					if (ImGui::Button(ecs->Get_Tag(e).tag.c_str()))
+					if (ImGui::Button(ecs->GetTag(e).tag.c_str()))
 					{
 						selected_entity = e;
 					}
@@ -290,30 +281,30 @@ int main(int argc, char** argv)
 
 
 				ImGui::Begin("Entity");
-				buf = (char*)ecs->Get_Tag(selected_entity).tag.c_str();
+				buf = (char*)ecs->GetTag(selected_entity).tag.c_str();
 				ImGui::InputText("Tag", buf, 1024 * sizeof(char));
 				ImGui::SameLine();
 				if (ImGui::Button("Set Tag"))
 				{
-					ecs->Get_Tag(selected_entity).tag = buf;
+					ecs->GetTag(selected_entity).tag = buf;
 				}
 				
 				//std::cout << ecs->Get_Tag(selected_entity).tag;
-				ImGui::SliderFloat("X", &ecs->Get_Transform(selected_entity).x, -100, 100);
+				ImGui::SliderFloat("X", &ecs->GetTransform(selected_entity).x, -100, 100);
 
-				ImGui::SliderFloat("Y", &ecs->Get_Transform(selected_entity).y, -100, 100);
-				ImGui::SliderFloat("W", &ecs->Get_Transform(selected_entity).w, 0, 100);
-				ImGui::SliderFloat("H", &ecs->Get_Transform(selected_entity).h, 0, 100);
+				ImGui::SliderFloat("Y", &ecs->GetTransform(selected_entity).y, -100, 100);
+				ImGui::SliderFloat("W", &ecs->GetTransform(selected_entity).w, 0, 100);
+				ImGui::SliderFloat("H", &ecs->GetTransform(selected_entity).h, 0, 100);
 				float* color = new float[4];
-				color[0] = ecs->Get_Rect(selected_entity).r;
-				color[1] = ecs->Get_Rect(selected_entity).g;
-				color[2] = ecs->Get_Rect(selected_entity).b;
-				color[3] = ecs->Get_Rect(selected_entity).a;
+				color[0] = ecs->GetQuad(selected_entity).r;
+				color[1] = ecs->GetQuad(selected_entity).g;
+				color[2] = ecs->GetQuad(selected_entity).b;
+				color[3] = ecs->GetQuad(selected_entity).a;
 				ImGui::ColorEdit4("Color", color);
-				ecs->Get_Rect(selected_entity).r = color[0];
-				ecs->Get_Rect(selected_entity).g = color[1];
-				ecs->Get_Rect(selected_entity).b = color[2];
-				ecs->Get_Rect(selected_entity).a = color[3];
+				ecs->GetQuad(selected_entity).r = color[0];
+				ecs->GetQuad(selected_entity).g = color[1];
+				ecs->GetQuad(selected_entity).b = color[2];
+				ecs->GetQuad(selected_entity).a = color[3];
 				if (ImGui::Button("Add Script"))
 				{
 					ECS_Lua_Add_Script(selected_entity);

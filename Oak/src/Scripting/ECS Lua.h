@@ -7,8 +7,9 @@
 
 namespace Oak
 {
-	ECS_Manager* manager;
+	ECS* manager;
 	GLFWwindow* window;
+	Camera* camera;
 
 	int width;
 	int height;
@@ -17,90 +18,90 @@ namespace Oak
 	{
 		int ECS_Lua_Get_X(lua_State* L)
 		{
-			Entity e = manager->Get_Entity(lua_tostring(L, -1));
-			lua_pushnumber(L, manager->Get_Transform(e).x);
+			Entity e = manager->GetEntity(lua_tostring(L, -1));
+			lua_pushnumber(L, manager->GetTransform(e).x);
 			return 1;
 		}
 
 		int ECS_Lua_Set_X(lua_State* L)
 		{
-			Entity e = manager->Get_Entity(lua_tostring(L, -2));
-			manager->Get_Transform(e).x = std::stod(lua_tostring(L, -1));
+			Entity e = manager->GetEntity(lua_tostring(L, -2));
+			manager->GetTransform(e).x = std::stod(lua_tostring(L, -1));
 			return 1;
 		}
 
 		int ECS_Lua_Get_Y(lua_State* L)
 		{
-			Entity e = manager->Get_Entity(lua_tostring(L, -1));
-			lua_pushnumber(L, manager->Get_Transform(e).y);
+			Entity e = manager->GetEntity(lua_tostring(L, -1));
+			lua_pushnumber(L, manager->GetTransform(e).y);
 			return 1;
 		}
 
 		int ECS_Lua_Set_Y(lua_State* L)
 		{
-			Entity e = manager->Get_Entity(lua_tostring(L, -2));
-			manager->Get_Transform(e).y = std::stod(lua_tostring(L, -1));
+			Entity e = manager->GetEntity(lua_tostring(L, -2));
+			manager->GetTransform(e).y = std::stod(lua_tostring(L, -1));
 			return 1;
 		}
 
 		int ECS_Lua_Get_W(lua_State* L)
 		{
-			Entity e = manager->Get_Entity(lua_tostring(L, -1));
-			lua_pushnumber(L, manager->Get_Transform(e).w);
+			Entity e = manager->GetEntity(lua_tostring(L, -1));
+			lua_pushnumber(L, manager->GetTransform(e).w);
 			return 1;
 		}
 
 		int ECS_Lua_Set_W(lua_State* L)
 		{
-			Entity e = manager->Get_Entity(lua_tostring(L, -2));
-			manager->Get_Transform(e).w = std::stod(lua_tostring(L, -1));
+			Entity e = manager->GetEntity(lua_tostring(L, -2));
+			manager->GetTransform(e).w = std::stod(lua_tostring(L, -1));
 			return 1;
 		}
 
 		int ECS_Lua_Get_H(lua_State* L)
 		{
-			Entity e = manager->Get_Entity(lua_tostring(L, -1));
-			lua_pushnumber(L, manager->Get_Transform(e).h);
+			Entity e = manager->GetEntity(lua_tostring(L, -1));
+			lua_pushnumber(L, manager->GetTransform(e).h);
 			return 1;
 		}
 
 		int ECS_Lua_Set_H(lua_State* L)
 		{
-			Entity e = manager->Get_Entity(lua_tostring(L, -2));
-			manager->Get_Transform(e).h = std::stod(lua_tostring(L, -1));
+			Entity e = manager->GetEntity(lua_tostring(L, -2));
+			manager->GetTransform(e).h = std::stod(lua_tostring(L, -1));
 			return 1;
 		}
-
+		/*
 		int ECS_Lua_Get_VX(lua_State* L)
 		{
-			Entity e = manager->Get_Entity(lua_tostring(L, -1));
-			lua_pushnumber(L, manager->Get_Velocity(e).vx);
+			Entity e = manager->GetEntity(lua_tostring(L, -1));
+			lua_pushnumber(L, manager->GetVelocity(e).vx);
 			return 1;
 		}
 		int ECS_Lua_Set_VX(lua_State* L)
 		{
-			Entity e = manager->Get_Entity(lua_tostring(L, -2));
-			manager->Get_Velocity(e).vx = std::stod(lua_tostring(L, -1));
+			Entity e = manager->GetEntity(lua_tostring(L, -2));
+			manager->GetVelocity(e).vx = std::stod(lua_tostring(L, -1));
 			return 1;
 		}
 		int ECS_Lua_Get_VY(lua_State* L)
 		{
-			Entity e = manager->Get_Entity(lua_tostring(L, -1));
-			lua_pushnumber(L, manager->Get_Velocity(e).vy);
+			Entity e = manager->GetEntity(lua_tostring(L, -1));
+			lua_pushnumber(L, manager->GetVelocity(e).vy);
 			return 1;
 		}
 		int ECS_Lua_Set_VY(lua_State* L)
 		{
-			Entity e = manager->Get_Entity(lua_tostring(L, -2));
-			manager->Get_Velocity(e).vy = std::stod(lua_tostring(L, -1));
+			Entity e = manager->GetEntity(lua_tostring(L, -2));
+			manager->GetVelocity(e).vy = std::stod(lua_tostring(L, -1));
 			return 1;
 		}
-
+		*/
 		int ECS_Lua_Move(lua_State* L)
 		{
-			Entity e = manager->Get_Entity(lua_tostring(L, -3));
-			manager->Get_Transform(e).x += std::stod(lua_tostring(L, -2));
-			manager->Get_Transform(e).y += std::stod(lua_tostring(L, -1));
+			Entity e = manager->GetEntity(lua_tostring(L, -3));
+			manager->GetTransform(e).x += std::stod(lua_tostring(L, -2));
+			manager->GetTransform(e).y += std::stod(lua_tostring(L, -1));
 			return 1;
 		}
 
@@ -128,6 +129,22 @@ namespace Oak
 			lua_pushboolean(L, glfwGetKey(window, key) == GLFW_PRESS);
 			return 1;
 		}
+
+		int Set_Camera_Pos(lua_State* L)
+		{
+			float desty = std::stof(lua_tostring(L, -1));
+			float destx = std::stof(lua_tostring(L, -2));
+			camera->Position.x = destx;
+			camera->Position.y = desty;
+			return 1;
+		}
+
+		int Set_Camera_Zoom(lua_State* L)
+		{
+			float zoom = std::stof(lua_tostring(L, -1));
+			camera->Position.z = zoom;
+			return 1;
+		}
 	}
 
 
@@ -142,12 +159,12 @@ namespace Oak
 		Lua_Push_Function(L, "Set_W", Lua::ECS_Lua_Set_W);
 		Lua_Push_Function(L, "Get_H", Lua::ECS_Lua_Get_H);
 		Lua_Push_Function(L, "Set_H", Lua::ECS_Lua_Set_H);
-
+		/*
 		Lua_Push_Function(L, "Get_VX", Lua::ECS_Lua_Get_VX);
 		Lua_Push_Function(L, "Set_VX", Lua::ECS_Lua_Set_VX);
 		Lua_Push_Function(L, "Get_VY", Lua::ECS_Lua_Get_VY);
 		Lua_Push_Function(L, "Set_VY", Lua::ECS_Lua_Set_VY);
-
+		*/
 		Lua_Push_Function(L, "Move", Lua::ECS_Lua_Move);
 
 		Lua_Push_Function(L, "Print", Lua::Print);
@@ -155,6 +172,8 @@ namespace Oak
 		Lua_Push_Function(L, "Screen_Width", Lua::Screen_Width);
 		Lua_Push_Function(L, "Screen_Height", Lua::Screen_Height);
 		Lua_Push_Function(L, "Key_Pressed", Lua::Key_Pressed);
+		Lua_Push_Function(L, "Set_Camera_Pos", Lua::Set_Camera_Pos);
+		Lua_Push_Function(L, "Set_Camera_Zoom", Lua::Set_Camera_Zoom);
 	}
 
 	void ECS_Lua_Push_Variables(lua_State* L)
@@ -170,9 +189,9 @@ namespace Oak
 	{
 		ECS_Script_c script;
 		script.L = luaL_newstate();
-		script.path = manager->Get_Tag(entity).tag.c_str();
+		script.path = manager->GetTag(entity).tag.c_str();
 		ECS_Lua_Push_Functions(script.L);
 		ECS_Lua_Push_Variables(script.L);
-		manager->component_array_manager.Add_Script(entity, script);
+		manager->AddScript(entity, script);
 	}
 }
